@@ -6,8 +6,6 @@ QUnit.module("conditions");
 
 test("simple state machine with one condition", function() {
 
-  var nameOfconditionValueOnTarget = false;
-
   var fsm = StateMachine.create({
     target: this,
     initial: 'green',
@@ -18,13 +16,15 @@ test("simple state machine with one condition", function() {
       { name: 'clear', from: 'yellow', to: 'green'  }
   ]});
 
+  fsm.nameOfconditionValueOnTarget = false;
+
   equal(fsm.current, 'green', "initial state should be green");
 
   //call warn event without condition met
   throws(fsm.warn.bind(fsm), /event warn does not meet condition to transistion from current state green to yellow/);
   equal(fsm.current, 'green', "current state should still be green");
 
-  nameOfconditionValueOnTarget = true;
+  fsm.nameOfconditionValueOnTarget = true;
 
   //call warn event with condition met
   fsm.warn();

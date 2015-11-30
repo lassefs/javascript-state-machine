@@ -50,7 +50,7 @@
         map[e.name] = map[e.name] || {};
         for (var n = 0 ; n < from.length ; n++) {
           transitions[from[n]] = transitions[from[n]] || [];
-          transitions[from[n]].push(e.name);
+          transitions[from[n]].push(e);
 
           map[e.name][from[n]] = e.to || from[n]; // allow no-op transition if 'to' is not specified
         }
@@ -75,10 +75,19 @@
       }
 
       fsm.current     = 'none';
+      fsm.conditionsMet = function(eventName) {
+        var transition = transitions[this.current].filter(function(t) { return t.name === eventName; })[0];
+
+        if(transition && transition.condition) {
+          return !!fsm[transition.condition];
+        } else {
+          return true;
+        }
+      };
       fsm.is          = function(state) { return (state instanceof Array) ? (state.indexOf(this.current) >= 0) : (this.current === state); };
       fsm.can         = function(event) { return !this.transition && (map[event].hasOwnProperty(this.current) || map[event].hasOwnProperty(StateMachine.WILDCARD)); }
       fsm.cannot      = function(event) { return !this.can(event); };
-      fsm.transitions = function()      { return transitions[this.current]; };
+      fsm.transitions = function()      { return transitions[this.current].map(function(t) { return t.name; }); };
       fsm.isFinished  = function()      { return this.is(terminal); };
       fsm.error       = cfg.error || function(name, from, to, args, error, msg, e) { throw e || msg; }; // default behavior when something unexpected happens is to throw an exception, but caller can override this behavior if desired (see github issue #3 and #17)
 
@@ -153,6 +162,9 @@
         if (this.cannot(name))
           return this.error(name, from, to, args, StateMachine.Error.INVALID_TRANSITION, "event " + name + " inappropriate in current state " + this.current);
 
+        if (!this.conditionsMet(name))
+          return this.error(name, from, to, args, StateMachine.Error.INVALID_TRANSITION, "event " + name + " does not meet condition to transistion from current state "+ this.current + " to " + to);
+
         if (false === StateMachine.beforeEvent(this, name, from, to, args))
           return StateMachine.Result.CANCELLED;
 
@@ -191,7 +203,6 @@
 
       };
     }
-
   }; // StateMachine
 
   //===========================================================================
