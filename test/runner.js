@@ -16,7 +16,8 @@ runner.run({
     "test/test_advanced.js",
     "test/test_classes.js",
     "test/test_async.js",
-    "test/test_initialize.js"
+    "test/test_initialize.js",
+    "test/test_conditions.js"
   ]
 
 });
