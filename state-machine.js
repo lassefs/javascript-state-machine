@@ -27,7 +27,8 @@
     Error: {
       INVALID_TRANSITION: 100, // caller tried to fire an event that was innapropriate in the current state
       PENDING_TRANSITION: 200, // caller tried to fire an event while an async transition was still pending
-      INVALID_CALLBACK:   300 // caller provided callback function threw an exception
+      INVALID_CALLBACK:   300, // caller provided callback function threw an exception
+      MISSING_CONDITION_TARGET: 400 // no condition target was set, but a condition defined and tried to be executed
     },
 
     WILDCARD: '*',
@@ -40,6 +41,7 @@
       var initial      = (typeof cfg.initial == 'string') ? { state: cfg.initial } : cfg.initial; // allow for a simple string, or an object with { state: 'foo', event: 'setup', defer: true|false }
       var terminal     = cfg.terminal || cfg['final'];
       var fsm          = target || cfg.target  || {};
+      var conditionTarget = cfg.conditionTarget || undefined;
       var events       = cfg.events || [];
       var callbacks    = cfg.callbacks || {};
       var map          = {}; // track state transitions allowed for an event { event: { from: [ to ] } }
@@ -75,11 +77,17 @@
       }
 
       fsm.current     = 'none';
+      fsm.conditionTarget = conditionTarget;
       fsm.conditionsMet = function(eventName) {
         var transition = transitions[this.current].filter(function(t) { return t.name === eventName; })[0];
+        var args       = Array.prototype.slice.call(arguments);
 
         if(transition && transition.condition) {
-          return !!fsm[transition.condition];
+          if(fsm.conditionTarget === undefined) {
+            return fsm.error(transition.name, transition.from, transition.to, args, StateMachine.Error.MISSING_CONDITION_TARGET, "no condition target was set, but a condition defined and tried to be executed");
+          } else {
+            return !!fsm.conditionTarget[transition.condition];
+          }
         } else {
           return true;
         }
