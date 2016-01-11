@@ -215,32 +215,39 @@
 
   //===========================================================================
 
-  //======
-  // NODE
-  //======
-  if (typeof exports !== 'undefined') {
-    if (typeof module !== 'undefined' && module.exports) {
-      exports = module.exports = StateMachine;
-    }
-    exports.StateMachine = StateMachine;
-  }
-  //============
-  // AMD/REQUIRE
-  //============
-  else if (typeof define === 'function' && define.amd) {
-    define(function(require) { return StateMachine; });
-  }
-  //========
-  // BROWSER
-  //========
-  else if (typeof window !== 'undefined') {
-    window.StateMachine = StateMachine;
-  }
-  //===========
-  // WEB WORKER
-  //===========
-  else if (typeof self !== 'undefined') {
-    self.StateMachine = StateMachine;
-  }
+  // Do a proper AMD export!
+  define('state-machine', [], function() {
+    'use strict';
+
+    return { default: StateMachine };
+  });
+
+  // //======
+  // // NODE
+  // //======
+  // if (typeof exports !== 'undefined') {
+  //   if (typeof module !== 'undefined' && module.exports) {
+  //     exports = module.exports = StateMachine;
+  //   }
+  //   exports.StateMachine = StateMachine;
+  // }
+  // //============
+  // // AMD/REQUIRE
+  // //============
+  // else if (typeof define === 'function' && define.amd) {
+  //   define(function(require) { return StateMachine; });
+  // }
+  // //========
+  // // BROWSER
+  // //========
+  // else if (typeof window !== 'undefined') {
+  //   window.StateMachine = StateMachine;
+  // }
+  // //===========
+  // // WEB WORKER
+  // //===========
+  // else if (typeof self !== 'undefined') {
+  //   self.StateMachine = StateMachine;
+  // }
 
 }());
